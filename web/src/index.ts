@@ -1,13 +1,9 @@
 import { User } from "./models/User";
 
-const user = new User({});
+const user = new User({ id: 1 });
 
-user.on("lalala", () => {
-    console.log("pjevaj pticica");
-});
-user.on("lalala", () => {
-    console.log("suti pticica");
-});
-user.on("baaaalalala", () => {
-    console.log("ne pricaj gluposti");
-});
+user.fetch();
+
+setTimeout(() => {
+    console.log(user);
+}, 4000);
