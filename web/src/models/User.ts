@@ -18,4 +18,22 @@ export class User {
     constructor(attrs: UserProps) {
         this.attributes = new Attributes<UserProps>(attrs);
     }
+
+    get on() {
+        // not calling a function, instead returning a reference
+        return this.events.on;
+    }
+
+    get trigger() {
+        return this.events.trigger;
+    }
+
+    get get() {
+        return this.attributes.get;
+    }
+
+    set(update: UserProps): void {
+        this.attributes.set(update);
+        this.events.trigger("change");
+    }
 }
