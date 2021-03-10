@@ -132,30 +132,10 @@ function () {
     this.attributes = attributes;
     this.events = events;
     this.sync = sync;
+    this.on = this.events.on;
+    this.trigger = this.events.trigger;
+    this.get = this.attributes.get;
   }
-
-  Object.defineProperty(Model.prototype, "on", {
-    get: function get() {
-      // not calling a function, instead returning a reference
-      return this.events.on;
-    },
-    enumerable: false,
-    configurable: true
-  });
-  Object.defineProperty(Model.prototype, "trigger", {
-    get: function get() {
-      return this.events.trigger;
-    },
-    enumerable: false,
-    configurable: true
-  });
-  Object.defineProperty(Model.prototype, "get", {
-    get: function get() {
-      return this.attributes.get;
-    },
-    enumerable: false,
-    configurable: true
-  });
 
   Model.prototype.set = function (update) {
     this.attributes.set(update);
@@ -2103,7 +2083,66 @@ function () {
 }();
 
 exports.Eventing = Eventing;
-},{}],"src/models/User.ts":[function(require,module,exports) {
+},{}],"src/models/Collection.ts":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Collection = void 0;
+
+var axios_1 = __importDefault(require("axios"));
+
+var Eventing_1 = require("./Eventing");
+
+var Collection =
+/** @class */
+function () {
+  function Collection(rooturl, deserialize) {
+    this.rooturl = rooturl;
+    this.deserialize = deserialize;
+    this.models = [];
+    this.events = new Eventing_1.Eventing();
+  }
+
+  Object.defineProperty(Collection.prototype, "on", {
+    get: function get() {
+      return this.events.on;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  Object.defineProperty(Collection.prototype, "trigger", {
+    get: function get() {
+      return this.events.trigger;
+    },
+    enumerable: false,
+    configurable: true
+  });
+
+  Collection.prototype.fetch = function () {
+    var _this = this;
+
+    axios_1.default.get(this.rooturl).then(function (response) {
+      response.data.forEach(function (value) {
+        _this.models.push(_this.deserialize(value));
+      });
+
+      _this.trigger("change");
+    });
+  };
+
+  return Collection;
+}();
+
+exports.Collection = Collection;
+},{"axios":"node_modules/axios/index.js","./Eventing":"src/models/Eventing.ts"}],"src/models/User.ts":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -2147,6 +2186,8 @@ var ApiSync_1 = require("./ApiSync");
 
 var Eventing_1 = require("./Eventing");
 
+var Collection_1 = require("./Collection");
+
 var rootUrl = "http://localhost:3000/users";
 
 var User =
@@ -2162,11 +2203,17 @@ function (_super) {
     return new User(new Attributes_1.Attributes(attrs), new Eventing_1.Eventing(), new ApiSync_1.ApiSync(rootUrl));
   };
 
+  User.buildUserCollection = function () {
+    return new Collection_1.Collection(rootUrl, function (json) {
+      return User.buildUser(json);
+    });
+  };
+
   return User;
 }(Model_1.Model);
 
 exports.User = User;
-},{"./Model":"src/models/Model.ts","./Attributes":"src/models/Attributes.ts","./ApiSync":"src/models/ApiSync.ts","./Eventing":"src/models/Eventing.ts"}],"src/index.ts":[function(require,module,exports) {
+},{"./Model":"src/models/Model.ts","./Attributes":"src/models/Attributes.ts","./ApiSync":"src/models/ApiSync.ts","./Eventing":"src/models/Eventing.ts","./Collection":"src/models/Collection.ts"}],"src/index.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2175,13 +2222,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var User_1 = require("./models/User");
 
-var user = User_1.User.buildUser({
-  id: 1
+var collection = User_1.User.buildUserCollection();
+collection.on("change", function () {
+  console.log(collection);
 });
-user.on("change", function () {
-  console.log(user);
-});
-user.fetch();
+collection.fetch();
 },{"./models/User":"src/models/User.ts"}],"../../../../../../../home/dorkele/.nvm/versions/node/v12.16.1/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -2210,7 +2255,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54221" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52063" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
