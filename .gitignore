@@ -5,3 +5,5 @@
 /stats/node_modules
 /web/node_modules
 /web/.cache
+/server/node_modules
+/server/.cache
