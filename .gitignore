@@ -7,3 +7,4 @@
 /web/.cache
 /server/node_modules
 /server/.cache
+/features/node_modules
